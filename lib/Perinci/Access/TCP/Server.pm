@@ -5,7 +5,7 @@ use strict;
 use warnings;
 use Log::Any '$log';
 
-our $VERSION = '0.01'; # VERSION
+our $VERSION = '0.02'; # VERSION
 
 use File::HomeDir;
 use IO::Select;
@@ -190,7 +190,11 @@ sub before_prefork {}
 
 sub _main_loop {
     my ($self) = @_;
-    $log->info("Child process started (PID $$)");
+    if ($self->_daemon->{parent_pid} == $$) {
+        $log->info("Entering main loop");
+    } else {
+        $log->info("Child process started (PID $$)");
+    }
     $self->_daemon->update_scoreboard({child_start_time=>time()});
 
     my $sel = IO::Select->new(@{ $self->_server_socks });
@@ -213,12 +217,15 @@ sub _main_loop {
                     state => "R",
                 });
                 $self->{_start_req_time} = [gettimeofday];
-                my $line = <$sock>;
+                my $line = $sock->getline;
+                $log->tracef("Read line from client: %s", $line);
                 last REQ unless $line;
                 if ($line =~ /\AJ(\d+)/) {
-                    sysread $sock, $self->{_req_json}, $1;
+                    $log->tracef("Reading $1 bytes from client ...");
+                    $sock->read($self->{_req_json}, $1);
+                    $log->tracef("Read $1 bytes from client: %s", $self->{_req_json});
                     eval { $self->{_req} = $json->decode($self->{_req_json}) };
-                    <$sock>; # read CRLF that ends request
+                    $sock->getline; # read CRLF that ends request
                     my $e = $@;
                     $self->{_finish_req_time} = [gettimeofday];
                     if ($e) {
@@ -230,7 +237,6 @@ sub _main_loop {
                         goto FINISH_REQ;
                     }
                     $self->{_start_res_time}  = [gettimeofday];
-                    use Data::Dump; dd $self->{_req};
                     $self->{_res} = $self->_pa->request(
                         $self->{_req}{action} => $self->{_req}{uri},
                         $self->{_req});
@@ -263,12 +269,13 @@ sub _main_loop {
 
 sub _write_sock {
     my ($self, $sock, $buffer) = @_;
+    $log->tracef("Sending to client: %s", $buffer);
     # large $buffer might need to be written in several steps, especially in
     # SSL sockets which might have smaller buffer size (like 16k)
     my $tot_written = 0;
     while (1) {
-        my $written = syswrite $sock, $buffer, length($buffer)-$tot_written,
-            $tot_written;
+        my $written = $sock->syswrite(
+            $buffer, length($buffer)-$tot_written, $tot_written);
         # XXX what to do on error, i.e. $written is undef?
         $tot_written += $written;
         last unless $tot_written < length($buffer);
@@ -421,7 +428,7 @@ Perinci::Access::TCP::Server - A Riap::TCP implementation for Perl
 
 =head1 VERSION
 
-version 0.01
+version 0.02
 
 =head1 SYNOPSIS
 

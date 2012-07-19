@@ -12,7 +12,7 @@ use Perinci::Access::TCP::Server;
 use Perinci::CmdLine ();
 use Perinci::Gen::ForModule qw(gen_meta_for_module);
 
-our $VERSION = '0.01'; # VERSION
+our $VERSION = '0.02'; # VERSION
 
 our %SPEC;
 
@@ -73,6 +73,10 @@ _
             summary => 'If true, will daemonize into background',
             arg_aliases => {D=>{}},
         },
+        fork => {
+            schema => ['bool' => {default=>1}],
+            summary => 'Set to false to disable forking',
+        },
     },
 };
 sub serve {
@@ -110,6 +114,7 @@ sub serve {
         daemonize       => $args{daemonize} // 0,
         scoreboard_path => 0,
         access_log_path => $access_log_path,
+        start_servers   => ($args{fork} // 1) ? undef : 0,
     );
     $server->run;
 
@@ -132,7 +137,7 @@ peri-tcpserver - Serve Perl modules using the Riap::TCP protocol
 
 =head1 VERSION
 
-version 0.01
+version 0.02
 
 =head1 SYNOPSIS
 

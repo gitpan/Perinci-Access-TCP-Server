@@ -27,4 +27,4 @@ requires:
 resources:
   homepage: http://metacpan.org/release/Perinci-Access-TCP-Server
   repository: http://github.com/sharyanto/perl-Perinci-Access-TCP-Server
-version: 0.01
+version: 0.02
