@@ -1,0 +1,138 @@
+NAME
+    Perinci::Access::TCP::Server - A Riap::TCP implementation for Perl
+
+VERSION
+    version 0.01
+
+SYNOPSIS
+     #!/usr/bin/perl
+     use Perinci::Access::TCP::Server;
+     my $server = Perinci::Access::TCP::Server->new(
+         ports                   => ['127.0.0.1:5678'],             # default none
+         unix_sockets            => ['/var/run/riap-tcp.sock'],     # default none
+         #start_servers          => 0,                # default 3, 0=don't prefork
+         #max_clients            => 0,                # default 3, 0=don't prefork
+         #max_requests_per_child => 100,                            # default 1000
+         #daemonize              => 1,                              # default 0
+     );
+     $server->run;
+
+    Or use using the included peri-tcpserve script:
+
+     % peri-tcpserve -p 127.0.0.1:5678 -s /path/to/unix/sock Foo::Bar Baz::*
+
+DESCRIPTION
+    This module implements Riap::TCP. Its features preforking, multiple
+    interface and Unix sockets.
+
+    This module uses Log::Any for logging.
+
+    This module uses Moo for object system.
+
+ATTRIBUTES
+  name => STR (default is basename of $0)
+    Name of server, for display in process table ('ps ax').
+
+  daemonize => BOOL (default 0)
+    Whether to daemonize (go into background).
+
+  ports => ARRAY OF STR (default [])
+    One or more TCP ports to listen to. Default is none. Each port can be in
+    the form of N, ":N", "0.0.0.0:N" (all means the same thing, to bind to
+    all interfaces) or "1.2.3.4:N" (to bind to a specific network
+    interface).
+
+    A string is also accepted, it will be split (delimiter ,) beforehand.
+
+    Since server does not support any encryption, it is recommended to bind
+    to localhost (127.0.0.1).
+
+  unix_sockets => ARRAY OF STR (default [])
+    Location of Unix sockets. Default is none, which means not listening to
+    Unix socket. Each element should be an absolute path.
+
+    A string is also accepted, it will be split (delimiter ,) beforehand.
+
+    You must at least specify one port or one Unix socket, or server will
+    refuse to run.
+
+  timeout => BOOL (default 120)
+    Socket timeout. Will be passed to IO::Socket.
+
+  require_root => BOOL (default 0)
+    Whether to require running as root.
+
+    Passed to SHARYANTO::Proc::Daemon::Prefork's constructor.
+
+  pid_path => STR (default /var/run/<name>.pid or ~/<name>.pid)
+    Location of PID file.
+
+  scoreboard_path => STR (default /var/run/<name>.scoreboard or ~/<name>.scoreboard)
+    Location of scoreboard file (used for communication between parent and
+    child processes). If you disable this (by setting scoreboard_path => 0),
+    autoadjusting number of children won't work (number of children will be
+    kept at 'start_servers').
+
+  error_log_path => STR (default /var/log/<name>-error.log or ~/<name>-error.log)
+    Location of error log. Default is /var/log/<name>-error.log. It will be
+    opened in append mode.
+
+  access_log_path => STR (default /var/log/<name>-access.log or ~/<name>-access.log)
+    Location of access log. It will be opened in append mode.
+
+  start_servers => INT (default 3)
+    Number of children to fork at the start of run. If you set this to 0,
+    the server becomes a nonforking one.
+
+    Tip: You can set start_servers to 0 and 'daemonize' to false for
+    debugging.
+
+  max_clients => INT (default 150)
+    Maximum number of children processes to maintain. If server is busy,
+    number of children will be increased from the original 'start_servers'
+    up until this value.
+
+  max_requests_per_child => INT (default 1000)
+    Number of requests each child will serve until it exists.
+
+METHODS
+  $server = Perinci::Access::TCP::Server->new(%args)
+    Create a new instance of server. %args can be used to set attributes.
+
+  $server->run()
+    Run server.
+
+  $server->start()
+    Alias for run().
+
+  $server->stop()
+    Stop running server.
+
+  $server->restart()
+    Restart server.
+
+  $server->is_running() => BOOL
+    Check whether server is running.
+
+  $server->before_prefork()
+    This is a hook provided for subclasses to do something before the daemon
+    is preforking. For example, you can preload Perl modules here so that
+    each child doesn't have to load modules separately (= inefficient).
+
+  $server->access_log($sock)
+    Write access log entry.
+
+SEE ALSO
+    Riap::TCP, Riap, Rinci
+
+    peri-tcpserve, simple command-line interface for this module.
+
+AUTHOR
+    Steven Haryanto <stevenharyanto@gmail.com>
+
+COPYRIGHT AND LICENSE
+    This software is copyright (c) 2012 by Steven Haryanto.
+
+    This is free software; you can redistribute it and/or modify it under
+    the same terms as the Perl 5 programming language system itself.
+
