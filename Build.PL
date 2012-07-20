@@ -18,7 +18,7 @@ my %module_build_args = (
     "Steven Haryanto <stevenharyanto\@gmail.com>"
   ],
   "dist_name" => "Perinci-Access-TCP-Server",
-  "dist_version" => "0.02",
+  "dist_version" => "0.03",
   "license" => "perl",
   "module_name" => "Perinci::Access::TCP::Server",
   "recommends" => {},
@@ -29,6 +29,9 @@ my %module_build_args = (
     "JSON" => 0,
     "Log::Any" => 0,
     "Moo" => 0,
+    "Perinci::Access" => 0,
+    "Perinci::Sub::property::result_postfilter" => 0,
+    "Perinci::Sub::property::timeout" => 0,
     "Riap" => "1.1.14",
     "SHARYANTO::Proc::Daemon::Prefork" => "0.05",
     "URI::Escape" => 0,

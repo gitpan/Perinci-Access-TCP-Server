@@ -20,6 +20,9 @@ requires:
   JSON: 0
   Log::Any: 0
   Moo: 0
+  Perinci::Access: 0
+  Perinci::Sub::property::result_postfilter: 0
+  Perinci::Sub::property::timeout: 0
   Riap: 1.1.14
   SHARYANTO::Proc::Daemon::Prefork: 0.05
   URI::Escape: 0
@@ -27,4 +30,4 @@ requires:
 resources:
   homepage: http://metacpan.org/release/Perinci-Access-TCP-Server
   repository: http://github.com/sharyanto/perl-Perinci-Access-TCP-Server
-version: 0.02
+version: 0.03
