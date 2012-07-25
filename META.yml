@@ -30,4 +30,4 @@ requires:
 resources:
   homepage: http://metacpan.org/release/Perinci-Access-TCP-Server
   repository: http://github.com/sharyanto/perl-Perinci-Access-TCP-Server
-version: 0.03
+version: 0.04
